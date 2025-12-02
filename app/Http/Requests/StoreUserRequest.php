@@ -29,7 +29,7 @@ class StoreUserRequest extends FormRequest
             'image'=>'required|image|max:4096',
             'id_image'=>'required|image|max:4096',
             'role'=>'required|in:landlord,tenant',
-            'birthday'=>'required|date|befor:today|after:1990-01-01'
+            'birthday'=>'required|date|before:today|after:1990-01-01'
         ];
     }
 }

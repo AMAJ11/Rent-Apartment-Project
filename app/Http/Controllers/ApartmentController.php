@@ -13,117 +13,140 @@ use Illuminate\Support\Facades\Auth;
 class ApartmentController extends Controller
 {
     //
-    public function store(StoreApartmentRequest $request) {
+    public function store(StoreApartmentRequest $request)
+    {
         $user = Auth::user();
         $user_id = $user->id;
         $validatedData = $request->validated();
         $validatedData['user_id'] = $user_id;
         $apartment = Apartment::create($validatedData);
-        return response()->json($apartment,200);
+        return response()->json($apartment, 200);
     }
 
-    public function update(UpdateApartmentRequest $request,int $id) {
+    public function update(UpdateApartmentRequest $request, int $id)
+    {
         $user = Auth::user();
         $user_id = $user->id;
         $apartment = Apartment::findOrFail($id);
         if ($user_id != $apartment->user_id) {
-            return response()->json(['message'=>'Unauthurized'],403);
+            return response()->json(['message' => 'Unauthurized'], 403);
         }
         $apartment->update($request->validated());
-        return response()->json($apartment,200);
+        return response()->json($apartment, 200);
     }
 
     //للمؤجر مشان يشوف الشقق يلي عندو ياها
-    public function index() {
+    public function index()
+    {
         $user = Auth::user();
         $apartments = $user->apartments;
-        return response()->json($apartments,200);
+        return response()->json($apartments, 200);
     }
 
     //مشان المؤجر يشوف تفاصيل الشقة تبعو
-    public function show(int $id) {
+    public function show(int $id)
+    {
         $user = Auth::user();
         $user_id = $user->id;
         $apartment = Apartment::findOrFail($id);
         if ($user_id != $apartment->user_id) {
-            return response()->json(['message'=>'Unauthurized'],403);
+            return response()->json(['message' => 'Unauthurized'], 403);
         }
-        return response()->json($apartment,200);
+        return response()->json($apartment, 200);
     }
 
     //مشان صاجب لشقة يحذفها اذا بدو
-    public function destroy(int $id) {
+    public function destroy(int $id)
+    {
         $user = Auth::user();
         $user_id = $user->id;
         $apartment = Apartment::findOrFail($id);
         if ($user_id != $apartment->user_id) {
-            return response()->json(['message'=>'Unauthurized'],403);
+            return response()->json(['message' => 'Unauthurized'], 403);
         }
         $apartment->delete();
-        return response()->json(['message'=>'The apartment deleted'],204);
+        return response()->json(['message' => 'The apartment deleted'], 204);
     }
 
     //####################################################################
     //اذا بدي اعرض للمؤجر كل الحجوزات على شقة معينة الو
-    public function showBookingsForApartment(int $id) {
+    public function showBookingsForApartment(int $id)
+    {
         $user = Auth::user();
         $user_id = $user->id;
         $apartment = Apartment::findOrFail($id);
         if ($user_id != $apartment->user_id) {
-            return response()->json(['message'=>'Unauthurized'],403);
+            return response()->json(['message' => 'Unauthurized'], 403);
         }
-        return response()->json(['bookings' => $apartment->bookings],200);
+        return response()->json(['bookings' => $apartment->bookings], 200);
     }
 
     //مشان اعرض للمؤجر كلشي حجوزات عندو ياها للشقق تبعوتو
-    public function showAllBookings() {
+    public function showAllBookings()
+    {
         $user = Auth::user();
         $bookings = $user->apartments->flatMap->bookings;
-        return response()->json($bookings,200);
+        return response()->json($bookings, 200);
     }
 
     // مشان المؤجر يوافق عالحجز او لا
-    public function confirmBooking(Request $request, int $booking_id) {
+    public function confirmBooking(Request $request, int $booking_id)
+    {
         $booking = Booking::findOrFail($booking_id);
-        
+
         $apartment_id = $booking->apartment_id;
 
         $user = Auth::user();
         $user_id = $user->id;
         $apartment = Apartment::findOrFail($apartment_id);
         if ($user_id != $apartment->user_id) {
-            return response()->json(['message'=>'Unauthurized'],403);
+            return response()->json(['message' => 'Unauthurized'], 403);
         }
-        if($request->isAccept) {
+        if ($request->isAccept) {
             $booking->status = 'confirmed';
             $availability = Availability::create([
-                'apartment_id'=>$apartment_id,
-                'start_non_available_date'=>$booking->start_date,
-                'end_non_available_date'=>$booking->end_date,
+                'apartment_id' => $apartment_id,
+                'start_non_available_date' => $booking->start_date,
+                'end_non_available_date' => $booking->end_date,
             ]);
-            return response()->json(['message'=> 'The booking has confirmed.','booking'=>$booking]);
-        }
-        else {
+            return response()->json(['message' => 'The booking has confirmed.', 'booking' => $booking]);
+        } else {
             $booking->status = 'canceled';
-            return response()->json(['message'=> 'The booking has canceled.','booking'=>$booking]);
+            return response()->json(['message' => 'The booking has canceled.', 'booking' => $booking]);
         }
-
-
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     //للمستاجرين كرمال يشوفو كلشي شقق موجودة
-    public function indexAll() {
+    public function indexAll()
+    {
         $apartments = Apartment::all();
-        return response()->json($apartments,200);
+        return response()->json($apartments, 200);
     }
 
     //مشان المستاجر يشوف تفاصيل الشقة
-    public function showForTenant(int $id) {
+    public function showForTenant(int $id)
+    {
         $apartment = Apartment::findOrFail($id);
-        return response()->json($apartment,200);
+        return response()->json($apartment, 200);
     }
+
+    // اضافة وازلة من المفضلة
+    public function toggleFavorite(Request $request, $apartmentId)
+    {
+        $user = Auth::user();
+        $apartment = Apartment::findOrFail($apartmentId);
+        $user->favorites->toggle($apartment->id);
+        return response()->json(['message' => 'Added/Removed from the Favorite'], 200);
+    }
+
+    //كلشي مفضلة عندي
+    public function getFavorites() {
+        $user = Auth::user();
+        return response()->json(['Favorites'=> $user->favorites],200);
+    }
+    
 
 
 }
