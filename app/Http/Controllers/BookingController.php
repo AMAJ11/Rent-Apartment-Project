@@ -47,7 +47,7 @@ class BookingController extends Controller
         $validatedData = $request->validated();
         $validatedData['user_id'] = $user_id;
         $validatedData['apartment_id'] = $apartment_id;
-        
+
         $apartment = Apartment::findOrFail($apartment_id);
         $validatedData['total_cost'] = $this->calculateTotalCost($apartment->price_for_month, $request->start_date, $request->end_date);
         if (!$this->hasDateOverlap($apartment_id, $request->start_date, $request->end_date)) {
@@ -67,6 +67,8 @@ class BookingController extends Controller
         }
         if ($booking->status == 'pending') {
             if (!$this->hasDateOverlap($booking->apartment_id, $request->start_date, $request->end_date)) {
+                $apartment = Apartment::findOrFail($booking->apartment_id);
+                $booking->total_cost = $this->calculateTotalCost($apartment->price_for_month, $request->start_date, $request->end_date);;
                 $booking->update($request->validated());
                 return response()->json(['message' => 'The booking has updated', 'booking' => $booking], 200);
             }
