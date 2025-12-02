@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\ApartmentController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
+use Illuminate\Http\ResponseTrait;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
@@ -28,6 +30,8 @@ Route::post('acceptUser/{id}',[UserController::class,'acceptUser'])->middleware(
 Route::middleware('isLandlord')->group(function(){
 
     Route::apiResource('apartment',ApartmentController::class);
+    Route::get('showBookingsForApartment/{id}',[ApartmentController::class,'showBookingsForApartment']);
+    Route::get('showAllBookingsForLandlord',[ApartmentController::class,'showAllBookings']);
     Route::post('confirmBooking/{booking_id}',[ApartmentController::class,'confirmBooking']);
 });
 /////////////////////////////////////////////////////////////////
@@ -39,6 +43,15 @@ Route::middleware('isTenant')->group(function(){
 
     Route::get('apartmentForTenant',[ApartmentController::class,'indexAll']);
     Route::get('apartmentForTenant/{id}',[ApartmentController::class,'showForTenant']);
+    //#######################################################################################
+    Route::apiResource('booking',[BookingController::class],[
+        "except"=>'store'
+    ]);
+    Route::post('booking/{apartment_id}',[BookingController::class,'store']);
+    // Route::get('booking',[BookingController::class,'index']);
+    // Route::get('booking/{id}',[BookingController::class,'show']);
+    // Route::put('booking/{id}',[BookingController::class,'update']);
+    // Route::delete('booking/{id}',[BookingController::class,'destroy']);
 });
 /////////////////////////////////////////////////////////////////
 
