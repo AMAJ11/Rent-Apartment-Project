@@ -142,11 +142,23 @@ class ApartmentController extends Controller
     }
 
     //كلشي مفضلة عندي
-    public function getFavorites() {
+    public function getFavorites()
+    {
         $user = Auth::user();
-        return response()->json(['Favorites'=> $user->favorites],200);
+        return response()->json(['Favorites' => $user->favorites], 200);
     }
-    
 
+    // كرمال الفلترة
+    public function filteringApartment(Request $request)
+    {
+        $apartments = Apartment::filter($request->only([
+            'city',
+            'min_price',
+            'max_price',
+            'rooms',
+            'min_rating'
+        ]))->get();
 
+        return response()->json(['apartments'=>$apartments],200);
+    }
 }
