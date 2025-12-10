@@ -14,13 +14,13 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         User::updateOrCreate(
-            ['phone' => '99999999'], // مفتاح فريد
+            ['phone' => '99999999'],
             [
                 'first_name' => 'Super',
                 'last_name' => 'Admin',
                 'phone' => '99999999',
                 'birthday' => '1990-01-01',
-                'image' => 'default.png',
+                'profile_image' => 'default.png',
                 'id_image' => 'default-id.png',
                 'role' => 'admin',
                 'password' => Hash::make('12345678'),

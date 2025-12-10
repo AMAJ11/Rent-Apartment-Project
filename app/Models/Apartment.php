@@ -25,6 +25,11 @@ class Apartment extends Model
         return $this->hasMany(Availability::class);
     }
 
+    public function images()
+    {
+        return $this->hasMany(Image::class);
+    }
+
     public function favoritedBy()
     {
         return $this->belongsToMany(User::class, 'favorites');

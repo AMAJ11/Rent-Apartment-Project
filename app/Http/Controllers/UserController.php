@@ -15,6 +15,16 @@ class UserController extends Controller
     
     function register(StoreUserRequest $request) {
         $validatedData = $request->validated();
+        if ($request->hasFile('profile_image')) {
+            $image = $request->file('profile_image')->store('users/profiles','public');
+            $validatedData['profile_image'] = $image;
+        }
+
+        if ($request->hasFile('id_image')) {
+            $image = $request->file('id_image')->store('users/identities','public');
+            $validatedData['id_image'] = $image;
+        }
+
         $validatedData['password'] =Hash::make($request->password);
         $user = TemporaryUser::create($validatedData);
         return response()->json(['message'=>'User Registered Successfully, We will contact you soon', $user], 201);

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('last_name');
             $table->string('phone')->unique();
             $table->date('birthday');
-            $table->string('image');
+            $table->string('profile_image');
             $table->string('id_image');
             $table->enum('role',['landlord','tenant']);
             $table->string('password');

@@ -24,6 +24,8 @@ class UpdateApartmentRequest extends FormRequest
         return [
             'description' => 'sometimes|string|min:10',
             'price_for_month' => 'sometimes|numeric|min:0',
+            'images' => 'required|array|max:5',
+            'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
         ];
     }
 }

@@ -20,7 +20,16 @@ class ApartmentController extends Controller
         $validatedData = $request->validated();
         $validatedData['user_id'] = $user_id;
         $apartment = Apartment::create($validatedData);
-        return response()->json($apartment, 200);
+        if ($request->hasFile('images')) {
+        foreach ($request->file('images') as $image) {
+            $path = $image->store('apartments', 'public');
+            
+            $apartment->images()->create([
+                'image' => $path
+            ]);
+        }
+    }
+    return response()->json(['apartment'=>$apartment,'images'=>$apartment->images], 200);
     }
 
     public function update(UpdateApartmentRequest $request, int $id)
@@ -32,7 +41,7 @@ class ApartmentController extends Controller
             return response()->json(['message' => 'Unauthurized'], 403);
         }
         $apartment->update($request->validated());
-        return response()->json($apartment, 200);
+        return response()->json(['apartment'=>$apartment,'images'=>$apartment->images], 200);
     }
 
     //للمؤجر مشان يشوف الشقق يلي عندو ياها
@@ -52,7 +61,7 @@ class ApartmentController extends Controller
         if ($user_id != $apartment->user_id) {
             return response()->json(['message' => 'Unauthurized'], 403);
         }
-        return response()->json($apartment, 200);
+        return response()->json(['apartment'=>$apartment,'images'=>$apartment->images], 200);
     }
 
     //مشان صاجب لشقة يحذفها اذا بدو
@@ -129,7 +138,7 @@ class ApartmentController extends Controller
     public function showForTenant(int $id)
     {
         $apartment = Apartment::findOrFail($id);
-        return response()->json($apartment, 200);
+        return response()->json(['apartment'=>$apartment,'images'=>$apartment->images], 200);
     }
 
     // اضافة وازلة من المفضلة
