@@ -23,7 +23,7 @@ class UpdateApartmentRequest extends FormRequest
     {
         return [
             'description' => 'sometimes|string|min:10',
-            'features' => 'sometimes|features|string',
+            'features' => 'sometimes|array|string',
             'price_for_month' => 'sometimes|numeric|min:0',
             'images' => 'sometimes|array|max:5',
             'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
