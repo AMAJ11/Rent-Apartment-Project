@@ -146,7 +146,7 @@ class ApartmentController extends Controller
     {
         $user = Auth::user();
         $apartment = Apartment::findOrFail($apartmentId);
-        $user->favorites->toggle($apartment->id);
+        $user->favorites()->toggle($apartment->id);
         return response()->json(['message' => 'Added/Removed from the Favorite'], 200);
     }
 

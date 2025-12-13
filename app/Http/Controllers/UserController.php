@@ -15,6 +15,10 @@ class UserController extends Controller
     
     function register(StoreUserRequest $request) {
         $validatedData = $request->validated();
+        $phone = User::where('phone',$request->phone)->first();
+        if ($phone) {
+            return response()->json(['message'=>'the phone is already exist'],200);
+        }
         if ($request->hasFile('profile_image')) {
             $image = $request->file('profile_image')->store('users/profiles','public');
             $validatedData['profile_image'] = $image;
