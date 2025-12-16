@@ -34,6 +34,8 @@ class BookingController extends Controller
 
     public function calculateTotalCost(int $priceForMonth, $start_date, $end_date)
     {
+        $start_date = Carbon::parse($start_date);
+        $end_date = Carbon::parse($end_date);
         $days = $start_date->diffInDays($end_date);
         $months = ceil($days / 30);
         $totalCost = $months * $priceForMonth;
