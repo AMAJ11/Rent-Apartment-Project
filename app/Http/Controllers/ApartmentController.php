@@ -23,13 +23,16 @@ class ApartmentController extends Controller
         if ($request->hasFile('images')) {
         foreach ($request->file('images') as $image) {
             $path = $image->store('apartments', 'public');
-            
+
             $apartment->images()->create([
                 'image' => $path
             ]);
         }
     }
-    return response()->json(['apartment'=>$apartment,'images'=>$apartment->images], 200);
+    else {
+        return response()->json(['message' => 'No images provided'], 400);
+    }
+    return response()->json(['apartment'=>$apartment], 200);
     }
 
     public function update(UpdateApartmentRequest $request, int $id)
@@ -48,8 +51,8 @@ class ApartmentController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $apartments = $user->apartments;
-        return response()->json($apartments, 200);
+        $apartments = $user->apartments()->with('images')->get();
+        return response()->json(['apartment'=>$apartments], 200);
     }
 
     //مشان المؤجر يشوف تفاصيل الشقة تبعو
@@ -57,11 +60,11 @@ class ApartmentController extends Controller
     {
         $user = Auth::user();
         $user_id = $user->id;
-        $apartment = Apartment::findOrFail($id);
+        $apartment = Apartment::with('images')->findOrFail($id);
         if ($user_id != $apartment->user_id) {
             return response()->json(['message' => 'Unauthurized'], 403);
         }
-        return response()->json(['apartment'=>$apartment,'images'=>$apartment->images], 200);
+        return response()->json(['apartment'=>$apartment], 200);
     }
 
     //مشان صاجب لشقة يحذفها اذا بدو
@@ -130,15 +133,15 @@ class ApartmentController extends Controller
     //للمستاجرين كرمال يشوفو كلشي شقق موجودة
     public function indexAll()
     {
-        $apartments = Apartment::all();
-        return response()->json($apartments, 200);
+        $apartments = Apartment::with('images')->get();
+        return response()->json(['apartments'=>$apartments], 200);
     }
 
     //مشان المستاجر يشوف تفاصيل الشقة
     public function showForTenant(int $id)
     {
-        $apartment = Apartment::findOrFail($id);
-        return response()->json(['apartment'=>$apartment,'images'=>$apartment->images], 200);
+        $apartment = Apartment::with('images')->findOrFail($id);
+        return response()->json(['apartment'=>$apartment], 200);
     }
 
     // اضافة وازلة من المفضلة

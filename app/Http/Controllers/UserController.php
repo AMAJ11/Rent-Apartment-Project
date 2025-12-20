@@ -57,6 +57,10 @@ class UserController extends Controller
             'phone'=>'required|digits:8|string',
             'password'=>'required|string|min:8',
         ]);
+        $phone = TemporaryUser::where('phone',$request->phone)->first();
+        if ($phone) {
+            return response()->json(['message'=>'the admin hasn\'t accepted you yet, please try again later'],404);
+        }
         if (!Auth::attempt($request->only('phone','password'))) {
             return response()->json(['messanger'=>'Unauthurized'],401);
         }
