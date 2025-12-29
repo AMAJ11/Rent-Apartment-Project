@@ -75,6 +75,6 @@ class ReviewController extends Controller
 
     public function indexForApartment(int $apartment_id) {
         $reviews = Reveiw::where('apartment_id', $apartment_id)->get();
-        return response()->json(['message'=>['revewis'=> $reviews]],200);
+        return response()->json(['revewis'=> $reviews],200);
     }
 }
