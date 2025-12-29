@@ -19,7 +19,7 @@ Route::get('logout', [UserController::class, 'logout'])->middleware('auth:sanctu
 
 
 Route::middleware('auth:sanctum')->group(function () {
-    //-----------------------------------------------------
+    /////////////////////////////////////////////////////////////////
     // for admin
     Route::middleware('Role:admin')->group(function () {
         Route::get('getAllTemporaryUsers', [UserController::class, 'temporaryIndex']);
@@ -30,25 +30,24 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     /////////////////////////////////////////////////////////////////
 
-
     /////////////////////////////////////////////////////////////////
     // for landlord مؤجر
     Route::middleware('Role:landlord')->group(function () {
-
         Route::apiResource('apartment', ApartmentController::class);
         Route::get('BookingsApartment/{id}', [ApartmentController::class, 'showBookingsForApartment']);
         Route::get('BookingsLandlord', [ApartmentController::class, 'showAllBookings']);
         Route::post('confirmBooking/{booking_id}', [ApartmentController::class, 'confirmBooking']);
     });
     /////////////////////////////////////////////////////////////////
-    // for التنين
-    Route::get('profile/{id}',[UserController::class,'show']);
 
     /////////////////////////////////////////////////////////////////
+    // for التنين
+    Route::get('profile/{id}',[UserController::class,'show']);
+    /////////////////////////////////////////////////////////////////
+    
+    /////////////////////////////////////////////////////////////////
     // for tenant مستاجر
-
     Route::middleware('Role:tenant')->group(function () {
-
         Route::prefix('apartments/')->group(function () {
             Route::get('Tenant', [ApartmentController::class, 'indexAll']);
             Route::get('Tenant/{id}', [ApartmentController::class, 'showForTenant']);
@@ -58,12 +57,15 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::apiResource('booking', BookingController::class)->except(['store']);
             Route::post('booking/{apartment_id}', [BookingController::class, 'store']);
             //#######################################################################################
-            Route::get('{apartment_id}',[AvailabilityController::class,'showAvailabilty']);
+            Route::get('filter',[ApartmentController::class,'filteringApartment']);
             //#######################################################################################
             Route::apiResource('rate',ReviewController::class)->except(['store']);
+            Route::get('rate/{apartment_id}/reviews', [ReviewController::class, 'indexForApartment']);
             Route::post('rate/{apartment_id}', [ReviewController::class, 'store']);
             //#######################################################################################
-            Route::get('filter',[ApartmentController::class,'filteringApartment']);
+            Route::get('{apartment_id}',[AvailabilityController::class,'showAvailabilty']);
         });
     });
+    /////////////////////////////////////////////////////////////////
 });
+

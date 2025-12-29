@@ -21,18 +21,18 @@ class ApartmentController extends Controller
         $validatedData['user_id'] = $user_id;
         $apartment = Apartment::create($validatedData);
         if ($request->hasFile('images')) {
-        foreach ($request->file('images') as $image) {
-            $path = $image->store('apartments', 'public');
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('apartments', 'public');
 
-            $apartment->images()->create([
-                'image' => $path
-            ]);
+                $apartment->images()->create([
+                    'image' => $path
+                ]);
+            }
+        } else {
+            $apartment->delete();
+            return response()->json(['message' => 'No images provided'], 400);
         }
-    }
-    else {
-        return response()->json(['message' => 'No images provided'], 400);
-    }
-    return response()->json(['apartment'=>$apartment], 200);
+        return response()->json(['apartment' => $apartment], 200);
     }
 
     public function update(UpdateApartmentRequest $request, int $id)
@@ -44,7 +44,8 @@ class ApartmentController extends Controller
             return response()->json(['message' => 'Unauthurized'], 403);
         }
         $apartment->update($request->validated());
-        return response()->json(['apartment'=>$apartment], 200);
+        
+        return response()->json(['apartment' => $apartment], 200);
     }
 
     //للمؤجر مشان يشوف الشقق يلي عندو ياها
@@ -52,7 +53,7 @@ class ApartmentController extends Controller
     {
         $user = Auth::user();
         $apartments = $user->apartments()->with('images')->get();
-        return response()->json(['apartment'=>$apartments], 200);
+        return response()->json(['apartment' => $apartments], 200);
     }
 
     //مشان المؤجر يشوف تفاصيل الشقة تبعو
@@ -64,7 +65,7 @@ class ApartmentController extends Controller
         if ($user_id != $apartment->user_id) {
             return response()->json(['message' => 'Unauthurized'], 403);
         }
-        return response()->json(['apartment'=>$apartment], 200);
+        return response()->json(['apartment' => $apartment], 200);
     }
 
     //مشان صاجب لشقة يحذفها اذا بدو
@@ -98,7 +99,7 @@ class ApartmentController extends Controller
     {
         $user = Auth::user();
         $bookings = $user->apartments->flatMap->bookings;
-        return response()->json(['bookings'=>$bookings], 200);
+        return response()->json(['bookings' => $bookings], 200);
     }
 
     // مشان المؤجر يوافق عالحجز او لا
@@ -114,25 +115,38 @@ class ApartmentController extends Controller
         if ($user_id != $apartment->user_id) {
             return response()->json(['message' => 'Unauthurized'], 403);
         }
-        if ($request->isAccept) {
-            $booking->status = 'confirmed';
-            $booking->save();
-            $user->balance += $booking->total_cost;
-            $user->save();
-            $tenant = $booking->user;
-            $tenant->balance -= $booking->total_cost;
-            $tenant->save();
-            $availability = Availability::create([
-                'apartment_id' => $apartment_id,
-                'start_non_available_date' => $booking->start_date,
-                'end_non_available_date' => $booking->end_date,
-            ]);
-            return response()->json(['message' => 'The booking has confirmed.', 'booking' => $booking]);
-        } else {
-            $booking->status = 'canceled';
-            return response()->json(['message' => 'The booking has canceled.', 'booking' => $booking]);
+        if ($booking->status === 'pending') {
+            if ($request->isAccept) {
+                $booking->status = 'confirmed';
+                $booking->save();
+                $user->balance += $booking->total_cost;
+                $user->save();
+                $tenant = $booking->user;
+                $tenant->balance -= $booking->total_cost;
+                $tenant->save();
+                $availability = Availability::create([
+                    'apartment_id' => $apartment_id,
+                    'start_non_available_date' => $booking->start_date,
+                    'end_non_available_date' => $booking->end_date,
+                ]);
+                $allBookings = Booking::where('apartment_id',$apartment_id)->get();
+                foreach ($allBookings as $mybooking) {
+                    if($mybooking->status === 'pending' && ($mybooking->start_date->lt($booking->end_date) && $booking->start_date->lt($mybooking->end_date))) {
+                        $mybooking->status = 'rejected';
+                        $mybooking->save();
+                    }
+                }
+                return response()->json(['message' => 'The booking has confirmed.', 'booking' => $booking]);
+            } else {
+                $booking->status = 'rejected';
+                $booking->save();
+                return response()->json(['message' => 'The booking has canceled.', 'booking' => $booking]);
+            }
         }
+        return response()->json(['message'=>'you have already confirmed/rejected this booking'],200);
     }
+
+    
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -140,14 +154,16 @@ class ApartmentController extends Controller
     public function indexAll()
     {
         $apartments = Apartment::with('images')->get();
-        return response()->json(['apartments'=>$apartments], 200);
+        return response()->json(['apartments' => $apartments], 200);
     }
 
     //مشان المستاجر يشوف تفاصيل الشقة
     public function showForTenant(int $id)
     {
-        $apartment = Apartment::with('images')->findOrFail($id);
-        return response()->json(['apartment'=>$apartment], 200);
+    $user = Auth::user();
+    $apartment = Apartment::with('images')->findOrFail($id);
+    $isFavorite = $user->favorites()->where('apartment_id', $apartment->id)->exists();
+    return response()->json(['apartment' => $apartment, 'is_favorite' => $isFavorite ], 200);
     }
 
     // اضافة وازلة من المفضلة
@@ -178,8 +194,8 @@ class ApartmentController extends Controller
             'min_rating',
             'min-space',
             'max-space',
-            ]))->get();
+        ]))->get();
 
-        return response()->json(['apartments'=>$apartments],200);
+        return response()->json(['apartments' => $apartments], 200);
     }
 }

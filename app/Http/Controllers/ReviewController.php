@@ -72,4 +72,9 @@ class ReviewController extends Controller
         }
         return response()->json(['reveiw'=>$review],200);
     }
+
+    public function indexForApartment(int $apartment_id) {
+        $reviews = Reveiw::where('apartment_id', $apartment_id)->get();
+        return response()->json(['message'=>['revewis'=> $reviews]],200);
+    }
 }
