@@ -179,7 +179,8 @@ class ApartmentController extends Controller
     public function getFavorites()
     {
         $user = Auth::user();
-        return response()->json(['Favorites' => $user->favorites], 200);
+        $favorites = $user->favorites()->with('images')->get();
+        return response()->json(['Favorites' => $favorites], 200);
     }
 
     // كرمال الفلترة
@@ -190,7 +191,8 @@ class ApartmentController extends Controller
             'town',
             'min_price',
             'max_price',
-            'rooms',
+            'min_rooms',
+            'max_rooms',
             'min_rating',
             'min-space',
             'max-space',
