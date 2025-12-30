@@ -9,6 +9,7 @@ use App\Models\Availability;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ApartmentController extends Controller
 {
@@ -44,8 +45,27 @@ class ApartmentController extends Controller
             return response()->json(['message' => 'Unauthurized'], 403);
         }
         $apartment->update($request->validated());
-        
-        return response()->json(['apartment' => $apartment], 200);
+
+        if ($request->filled('deleted_images')) {
+            $imagesToDelete = $apartment->images()
+                ->whereIn('id', $request->deleted_images)
+                ->get();
+            foreach ($imagesToDelete as $image) {
+                Storage::disk('public')->delete($image->image);
+                $image->delete();
+            }
+        }
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('apartments', 'public');
+
+                $apartment->images()->create([
+                    'image' => $path,
+                ]);
+            }
+        }
+        return response()->json(['message' => 'Apartment updated successfully', 'apartment' => $apartment->load('images')], 200);
     }
 
     //للمؤجر مشان يشوف الشقق يلي عندو ياها

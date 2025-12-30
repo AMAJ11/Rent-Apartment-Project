@@ -23,10 +23,12 @@ class UpdateApartmentRequest extends FormRequest
     {
         return [
             'description' => 'sometimes|string|min:10',
-            'features' => 'sometimes|array|string',
+            'features' => 'sometimes|string',
             'price_for_month' => 'sometimes|numeric|min:0',
-            'images' => 'sometimes|array|max:5',
+            'images' => 'sometimes|array',
             'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            'deleted_images' => 'sometimes|array',
+            'deleted_images.*' => 'exists:images,id',
         ];
     }
 }
