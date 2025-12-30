@@ -186,7 +186,7 @@ class ApartmentController extends Controller
     // كرمال الفلترة
     public function filteringApartment(Request $request)
     {
-        $apartments = Apartment::filter($request->only([
+        $apartments = Apartment::with('images')->filter($request->only([
             'city',
             'town',
             'min_price',
