@@ -149,9 +149,14 @@ class ApartmentController extends Controller
                     'start_non_available_date' => $booking->start_date,
                     'end_non_available_date' => $booking->end_date,
                 ]);
-                $allBookings = Booking::where('apartment_id',$apartment_id)->get();
+                $allBookings = Booking::where('apartment_id', $apartment_id)->get();
                 foreach ($allBookings as $mybooking) {
-                    if($mybooking->status === 'pending' && ($mybooking->start_date->lt($booking->end_date) && $booking->start_date->lt($mybooking->end_date))) {
+                    if (
+                        $mybooking->status === 'pending'
+                        && $mybooking->id !== $booking->id
+                        && ($mybooking->start_date->lt($booking->end_date)
+                            && $booking->start_date->lt($mybooking->end_date))
+                    ) {
                         $mybooking->status = 'rejected';
                         $mybooking->save();
                     }
@@ -163,7 +168,7 @@ class ApartmentController extends Controller
                 return response()->json(['message' => 'The booking has canceled.', 'booking' => $booking]);
             }
         }
-        return response()->json(['message'=>'you have already confirmed/rejected this booking'],200);
+        return response()->json(['message' => 'you have already confirmed/rejected this booking'], 200);
     }
 
     
@@ -180,10 +185,10 @@ class ApartmentController extends Controller
     //مشان المستاجر يشوف تفاصيل الشقة
     public function showForTenant(int $id)
     {
-    $user = Auth::user();
-    $apartment = Apartment::with('images')->findOrFail($id);
-    $isFavorite = $user->favorites()->where('apartment_id', $apartment->id)->exists();
-    return response()->json(['apartment' => $apartment, 'is_favorite' => $isFavorite ], 200);
+        $user = Auth::user();
+        $apartment = Apartment::with('images')->findOrFail($id);
+        $isFavorite = $user->favorites()->where('apartment_id', $apartment->id)->exists();
+        return response()->json(['apartment' => $apartment, 'is_favorite' => $isFavorite], 200);
     }
 
     // اضافة وازلة من المفضلة
