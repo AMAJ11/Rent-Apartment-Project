@@ -115,11 +115,38 @@ class ApartmentController extends Controller
         return response()->json(['bookings' => $apartment->bookings], 200);
     }
 
+    //اذا بدي اعرض للمؤجر كل الحجوزات الموافق عليها لشقة معينة الو
+    public function showConfirmedBookingsForApartment(int $id)
+    {
+        $user = Auth::user();
+        $user_id = $user->id;
+        $apartment = Apartment::findOrFail($id);
+        if ($user_id != $apartment->user_id) {
+            return response()->json(['message' => 'Unauthurized'], 403);
+        }
+        $bookings = $apartment->bookings()->where('status', 'confirmed')->get();
+        return response()->json(['bookings' => $bookings], 200);
+    }
+
     //مشان اعرض للمؤجر كلشي حجوزات عندو ياها للشقق تبعوتو
     public function showAllBookings()
     {
         $user = Auth::user();
         $bookings = $user->apartments->flatMap->bookings;
+        return response()->json(['bookings' => $bookings], 200);
+    }
+
+    //مشان اعرض للمؤجر كلشي حجوزات موافق عليها
+    public function showAllConfirmedBookings()
+    {
+        $user = Auth::user();
+
+        $bookings = Booking::whereHas('apartment', function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })
+            ->where('status', 'confirmed')
+            ->get();
+
         return response()->json(['bookings' => $bookings], 200);
     }
 
@@ -170,7 +197,7 @@ class ApartmentController extends Controller
         return response()->json(['message' => 'you have already confirmed/rejected this booking'], 200);
     }
 
-    
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -218,8 +245,8 @@ class ApartmentController extends Controller
             'min_rooms',
             'max_rooms',
             'min_rating',
-            'min-space',
-            'max-space',
+            'min_space',
+            'max_space',
         ]))->get();
 
         return response()->json(['apartments' => $apartments], 200);

@@ -35,7 +35,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('Role:landlord')->group(function () {
         Route::apiResource('apartment', ApartmentController::class);
         Route::get('BookingsApartment/{id}', [ApartmentController::class, 'showBookingsForApartment']);
+        Route::get('ConfirmedBookings/{id}', [ApartmentController::class, 'showConfirmedBookingsForApartment']);
         Route::get('BookingsLandlord', [ApartmentController::class, 'showAllBookings']);
+        Route::get('ConfirmedBookingsLandlord', [ApartmentController::class, 'showAllConfirmedBookings']);
         Route::post('confirmBooking/{booking_id}', [ApartmentController::class, 'confirmBooking']);
     });
     /////////////////////////////////////////////////////////////////
