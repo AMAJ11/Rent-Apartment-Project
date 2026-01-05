@@ -16,7 +16,7 @@
 
                 <div class="stat-card">
                     <p>Bookings</p>
-                    <h3> {{$appartments->count()}} </h3>
+                    <h3> {{$apartments->count()}} </h3>
                 </div>
 
                 <div class="stat-card">

@@ -1,7 +1,7 @@
 <main class="main" style="padding-top: 40px;">
 
     <div class="page-header">
-        <h2>All Properties</h2>
+        <h2>All Users</h2>
     </div>
 
     <div class="cards">
