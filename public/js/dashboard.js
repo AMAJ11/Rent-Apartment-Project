@@ -16,7 +16,7 @@ function loadPage(page) {
             content.innerHTML = html
             history.pushState({ page }, '', `#${page}`)
         })
-}
+} 
 
 function setActive(activeLink) {
     links.forEach(l => l.classList.remove('active'))
