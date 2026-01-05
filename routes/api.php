@@ -22,13 +22,7 @@ Route::get('logout', [UserController::class, 'logout'])->middleware('auth:sanctu
 Route::middleware('auth:sanctum')->group(function () {
     /////////////////////////////////////////////////////////////////
     // for admin
-    Route::middleware('Role:admin')->group(function () {
-        Route::get('getAllTemporaryUsers', [UserController::class, 'temporaryIndex']);
-        Route::post('acceptUser/{id}', [UserController::class, 'acceptUser']);
-        Route::get('allusers', [UserController::class, 'index']);
-        Route::delete('deleteUser/{id}', [UserController::class, 'destroy']);
-        Route::post('increaseBalance/{id}',[UserController::class, 'addBalance']);
-    });
+
     /////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////

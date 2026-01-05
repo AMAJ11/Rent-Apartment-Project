@@ -82,6 +82,7 @@ class ApartmentController extends Controller
     public function show(int $id)
     {
         $user = Auth::user();
+        
         $user_id = $user->id;
         $apartment = Apartment::with('images')->findOrFail($id);
         if ($user_id != $apartment->user_id) {
