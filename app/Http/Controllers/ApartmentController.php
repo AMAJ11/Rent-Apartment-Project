@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateApartmentRequest;
 use App\Models\Apartment;
 use App\Models\Availability;
 use App\Models\Booking;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -175,6 +176,10 @@ class ApartmentController extends Controller
                     'start_non_available_date' => $booking->start_date,
                     'end_non_available_date' => $booking->end_date,
                 ]);
+                $notification = Notification::create([
+                    'user_id' => $tenant->id,
+                    'message' => 'Your booking for apartment ID ' . $apartment_id . ' has been confirmed.'
+                ]);
                 // $allBookings = Booking::where('apartment_id', $apartment_id)->get();
                 // foreach ($allBookings as $mybooking) {
                 //     if (
@@ -187,18 +192,31 @@ class ApartmentController extends Controller
                 //         $mybooking->save();
                 //     }
                 // }
-                Booking::where('apartment_id', $apartment->id)
+                $conflictingBookings = Booking::where('apartment_id', $apartment->id)
                     ->where('id', '!=', $booking->id)
                     ->where('status', 'pending')
                     ->where(function ($query) use ($booking) {
                         $query->where('start_date', '<', $booking->end_date)
                             ->where('end_date', '>', $booking->start_date);
                     })
-                    ->update(['status' => 'rejected']);
+                    ->get();
+                foreach ($conflictingBookings as $conflicting) {
+                    $conflicting->status = 'rejected';
+                    $conflicting->save();
+                    $notification = Notification::create([
+                    'user_id' => $conflicting->user_id,
+                    'message' => 'Your booking for apartment ID ' . $apartment_id . ' has been rejected.'
+                ]);
+                }
                 return response()->json(['message' => 'The booking has confirmed and conflicting requests has rejected.', 'booking' => $booking]);
             } else {
                 $booking->status = 'rejected';
                 $booking->save();
+                $tenant = $booking->user;
+                $notification = Notification::create([
+                    'user_id' => $tenant->id,
+                    'message' => 'Your booking for apartment ID ' . $apartment_id . ' has been rejected.'
+                ]);
                 return response()->json(['message' => 'The booking has canceled.', 'booking' => $booking]);
             }
         }

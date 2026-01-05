@@ -3,6 +3,7 @@
 use App\Http\Controllers\ApartmentController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -64,6 +65,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('booking/{apartment_id}', [BookingController::class, 'store']);
             //#######################################################################################
             Route::get('filter',[ApartmentController::class,'filteringApartment']);
+            //#######################################################################################
+            Route::get('notifications',[NotificationController::class,'index']);
+            Route::delete('clear/notifications',[NotificationController::class,'destroy']);
             //#######################################################################################
             Route::apiResource('rate',ReviewController::class)->except(['store']);
             Route::post('rate/{apartment_id}', [ReviewController::class, 'store']);
