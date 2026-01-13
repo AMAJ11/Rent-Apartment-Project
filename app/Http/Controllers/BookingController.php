@@ -113,8 +113,8 @@ class BookingController extends Controller
             ]);
             $halfCost = $booking->total_cost / 2;
             $owner = $booking->apartment->user;
-            $owner->increment('balance', $halfCost);
-            $user->decrement('balance', $halfCost);
+            $user->increment('balance', $halfCost);
+            $owner->decrement('balance', $halfCost);
             $availabilty = Availability::where('apartment_id', $booking->apartment_id)
                 ->where('start_non_available_date', $booking->start_date)
                 ->where('end_non_available_date', $booking->end_date)

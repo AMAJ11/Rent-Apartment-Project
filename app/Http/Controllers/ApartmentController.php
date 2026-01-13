@@ -209,7 +209,7 @@ class ApartmentController extends Controller
                     'message' => 'Your booking for apartment ID ' . $apartment_id . ' has been rejected.'
                 ]);
                 }
-                return response()->json(['message' => 'The booking has confirmed and conflicting requests has rejected.', 'booking' => $booking]);
+                return response()->json(['message' => 'The booking has confirmed and conflicting requests has rejected.', 'booking' => $booking], 200);
             } else {
                 $booking->status = 'rejected';
                 $booking->save();
